@@ -1,0 +1,122 @@
+{% extends "tracker/layout.html" %}
+
+{% block body %}
+<div class="container mt-4" style="max-width: 800px;">
+    <div class="card p-4 shadow-sm border-0 mb-4" style="border-radius: 20px;">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="text-primary fw-bold mb-1">{{ type }} Antrenmanı</h2>
+                <span class="badge bg-soft-primary text-primary px-3 rounded-pill">{{ level }} Modu</span>
+            </div>
+            <div class="text-end">
+                <h1 id="timer" class="display-4 fw-bold text-dark mb-0">00:00</h1>
+                <small class="text-muted fw-bold">Kalan Süre</small>
+            </div>
+        </div>
+
+        <div class="row g-2 mt-3">
+            <div class="col-4">
+                <button class="btn btn-outline-dark w-100 fw-bold" onclick="startTimer(15)">15 Dakika</button>
+            </div>
+            <div class="col-4">
+                <button class="btn btn-outline-dark w-100 fw-bold" onclick="startTimer(30)">30 Dakika</button>
+            </div>
+            <div class="col-4">
+                <button class="btn btn-outline-dark w-100 fw-bold" onclick="startTimer(60)">1 Saat</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card p-4 shadow-sm border-0 mb-4" style="border-radius: 20px;">
+        <h5 class="fw-bold mb-3 border-bottom pb-2">📋 Günün Hareketleri</h5>
+        <div id="program-list" class="list-group list-group-flush">
+            </div>
+    </div>
+
+    <div class="d-grid gap-2">
+        <button onclick="proceedToCreate()" class="btn btn-success btn-lg fw-bold shadow-sm" style="border-radius: 15px;">
+            Antrenmanı Bitir ve Verileri Gir
+        </button>
+    </div>
+</div>
+
+<script>
+    // URL'den gelen verileri alıyoruz
+    const type = "{{ type }}";
+    const level = "{{ level }}";
+
+    // workout.js içindeki kütüphanenin aynısını buraya veya global bir yere koymalıyız
+    const programs = {
+        'Push': {
+            'Easy': [{name: 'Duvarda Şınav', sets: 3, reps: 10}, {name: 'Diz Üstü Şınav', sets: 2, reps: 10}],
+            'Medium': [{name: 'Bench Press', sets: 3, reps: 10}, {name: 'Overhead Press', sets: 3, reps: 10}],
+            'Hard': [{name: 'Barbell Bench Press', sets: 5, reps: 5}, {name: 'Weighted Dips', sets: 4, reps: 8}]
+        },
+        'Pull': {
+            'Easy': [{name: 'Dumbbell Row', sets: 3, reps: 12}],
+            'Medium': [{name: 'Barfiks', sets: 3, reps: 8}, {name: 'Seated Row', sets: 3, reps: 10}],
+            'Hard': [{name: 'Weighted Pull-ups', sets: 4, reps: 6}, {name: 'Deadlift', sets: 5, reps: 5}]
+        },
+        'Legs': {
+            'Easy': [{name: 'Bodyweight Squat', sets: 3, reps: 15}],
+            'Medium': [{name: 'Barbell Squat', sets: 3, reps: 10}, {name: 'Leg Press', sets: 3, reps: 12}],
+            'Hard': [{name: 'Back Squat', sets: 5, reps: 5}, {name: 'Bulgarian Split Squat', sets: 4, reps: 8}]
+        },
+        'FullBody': {
+            'Easy': [{name: 'Şınav', sets: 3, reps: 10}, {name: 'Squat', sets: 3, reps: 10}],
+            'Medium': [{name: 'Deadlift', sets: 3, reps: 10}, {name: 'Bench Press', sets: 3, reps: 10}],
+            'Hard': [{name: 'Clean & Press', sets: 5, reps: 5}, {name: 'Burpees', sets: 4, reps: 15}]
+        }
+    };
+
+    // 1. Programı Ekrana Basma
+    function loadProgram() {
+        const list = document.getElementById('program-list');
+        const exercises = programs[type][level];
+
+        list.innerHTML = exercises.map(ex => `
+            <div class="list-group-item border-0 px-0 d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="fw-bold d-block text-dark">${ex.name}</span>
+                    <small class="text-muted">${ex.sets} Set x ${ex.reps} Tekrar</small>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input p-2" type="checkbox" style="border-radius: 5px;">
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // 2. Zamanlayıcı Fonksiyonu
+    let countdown;
+    function startTimer(minutes) {
+        clearInterval(countdown);
+        let seconds = minutes * 60;
+
+        countdown = setInterval(() => {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            document.getElementById('timer').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+            if (seconds <= 0) {
+                clearInterval(countdown);
+                alert("Antrenman Süresi Bitti!");
+            }
+            seconds--;
+        }, 1000);
+    }
+
+    // 3. Bir Sonraki Sayfaya Aktarım
+    function proceedToCreate() {
+        window.location.href = `/create?preset=${type}&level=${level}`;
+    }
+
+    document.addEventListener('DOMContentLoaded', loadProgram);
+</script>
+
+<style>
+    .bg-soft-primary { background-color: rgba(13, 110, 253, 0.1); }
+    .list-group-item { border-bottom: 1px solid #f1f1f1 !important; }
+    .list-group-item:last-child { border-bottom: none !important; }
+</style>
+{% endblock %}

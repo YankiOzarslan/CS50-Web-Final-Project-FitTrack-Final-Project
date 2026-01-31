@@ -1,0 +1,63 @@
+{% extends "tracker/layout.html" %}
+{% load static %}
+
+{% block body %}
+<div class="container mt-4 mb-5" style="max-width: 800px;">
+    <div class="card p-4 shadow-lg border-0" style="background-color: #ffffff; border-radius: 20px;">
+        <div class="d-flex align-items-center mb-4 border-bottom pb-3">
+            <a href="{% url 'index' %}" class="btn btn-sm btn-outline-secondary me-3" style="border-radius: 10px;"> < Geri </a>
+            <h2 class="text-primary fw-bold mb-0">🏋️ Yeni Antrenman Kaydet</h2>
+        </div>
+
+        <div class="mb-4 bg-light p-3" style="border-radius: 15px;">
+            <label class="form-label fw-bold text-secondary">Antrenman Başlığı</label>
+            <input type="text" id="workout-name" class="form-control form-control-lg border-0 shadow-sm" placeholder="Örn: Sırt ve Biceps Günü" style="border-radius: 10px;">
+        </div>
+
+        <div id="exercise-list">
+            </div>
+
+        <div class="mt-4 d-grid gap-3">
+            <button type="button" class="btn btn-outline-primary btn-lg border-2 fw-bold" onclick="addExercise()" style="border-radius: 12px;">
+                ➕ Yeni Hareket Ekle
+            </button>
+            <button type="button" class="btn btn-success btn-lg fw-bold shadow-sm" onclick="saveWorkout()" style="border-radius: 12px; background: linear-gradient(45deg, #28a745, #2ecc71); border: none;">
+                ✅ Antrenmanı Bitir ve Kaydet
+            </button>
+        </div>
+    </div>
+</div>
+
+{% csrf_token %}
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+<script>
+    // JS'in token'ı hem değişkenden hem de cookie'den okuyabilmesi için
+    const csrfToken = "{{ csrf_token }}";
+</script>
+
+<style>
+    /* Dinamik kartlar için akıcı görünüm */
+    .exercise-card {
+        transition: all 0.3s ease;
+        animation: fadeIn 0.4s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .set-row {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 8px;
+        margin-bottom: 8px !important;
+    }
+    /* Input odaklandığında mavi çerçeveyi kaldırıp gölge ekle */
+    .form-control:focus {
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        border-color: transparent;
+    }
+</style>
+
+<script src="{% static 'tracker/workout.js' %}"></script>
+{% endblock %}

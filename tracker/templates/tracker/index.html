@@ -1,0 +1,300 @@
+{% extends "tracker/layout.html" %}
+
+{% block body %}
+<div class="card p-4 mb-5 shadow-sm border-0 bg-white" style="border-radius: 20px;">
+    <div class="d-md-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold text-dark mb-0">🔥 Daily Calorie Status</h5>
+        <div class="d-flex align-items-center">
+            <span class="me-2 small fw-bold">Goal:</span>
+            <input type="number" id="calorie-limit" class="form-control form-control-sm border-0 bg-light" style="width: 80px;" value="2500" onchange="updateBar()">
+        </div>
+    </div>
+    <div class="progress mb-3" style="height: 30px; border-radius: 15px; background-color: #e9ecef;">
+        <div id="calorie-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%; color: white; font-weight: bold; font-size: 0.9rem;">0 kcal</div>
+    </div>
+    <div class="row g-2">
+        <div class="col-md-4">
+            <select id="food-select" class="form-select border-0 bg-light">
+                <option value="0">🍎 Select Preset Food</option>
+                <option value="250">Rice - 250 kcal</option>
+                <option value="350">Chicken - 350 kcal</option>
+                <option value="500">Pasta - 500 kcal</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <div class="input-group">
+                <input type="text" id="manual-food-name" class="form-control form-control-sm bg-light border-0" placeholder="Food Name">
+                <input type="number" id="manual-food-cal" class="form-control form-control-sm bg-light border-0" placeholder="kcal">
+            </div>
+        </div>
+        <div class="col-md-2"><button class="btn btn-dark btn-sm w-100 fw-bold shadow-sm" onclick="addCalorie()">Add</button></div>
+        <div class="col-md-2"><button class="btn btn-outline-danger btn-sm w-100 border-0" onclick="resetCalorie()">Reset</button></div>
+    </div>
+</div>
+
+<div class="mb-5">
+    <div class="d-flex justify-content-between align-items-end mb-3">
+        <h4 class="fw-bold text-secondary mb-0">Quick Start Workout</h4>
+        <a href="{% url 'create' %}" class="btn btn-sm btn-primary fw-bold rounded-pill px-3">+ Custom Workout</a>
+    </div>
+
+    <div class="btn-group w-100 mb-4 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+        <input type="radio" class="btn-check" name="level" id="level-easy" value="Easy" checked>
+        <label class="btn btn-outline-success border-0 fw-bold py-2" for="level-easy">🟢 Beginner</label>
+        <input type="radio" class="btn-check" name="level" id="level-medium" value="Medium">
+        <label class="btn btn-outline-warning border-0 fw-bold py-2" for="level-medium">🟡 Intermediate</label>
+        <input type="radio" class="btn-check" name="level" id="level-hard" value="Hard">
+        <label class="btn btn-outline-danger border-0 fw-bold py-2" for="level-hard">🔴 Advanced</label>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-6 col-md-3" onclick="toggleActiveWorkout('Push')">
+            <div class="card h-100 text-center p-3 preset-card border-0 shadow-sm bg-white">
+                <div class="fs-1 mb-2">🚀</div><h6 class="fw-bold mb-0">Push</h6>
+            </div>
+        </div>
+        <div class="col-6 col-md-3" onclick="toggleActiveWorkout('Pull')">
+            <div class="card h-100 text-center p-3 preset-card border-0 shadow-sm bg-white">
+                <div class="fs-1 mb-2">🧗</div><h6 class="fw-bold mb-0">Pull</h6>
+            </div>
+        </div>
+        <div class="col-6 col-md-3" onclick="toggleActiveWorkout('Legs')">
+            <div class="card h-100 text-center p-3 preset-card border-0 shadow-sm bg-white">
+                <div class="fs-1 mb-2">🦵</div><h6 class="fw-bold mb-0">Legs</h6>
+            </div>
+        </div>
+        <div class="col-6 col-md-3" onclick="toggleActiveWorkout('FullBody')">
+            <div class="card h-100 text-center p-3 preset-card border-0 shadow-sm bg-white">
+                <div class="fs-1 mb-2">🏋️</div><h6 class="fw-bold mb-0">Full Body</h6>
+            </div>
+        </div>
+    </div>
+
+    <div id="active-workout-panel" class="mt-4 shadow-lg border-0 d-none" style="border-radius: 25px; background: linear-gradient(135deg, #ffffff, #f0f7ff);">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 id="active-title" class="fw-bold text-primary mb-0">Workout</h3>
+                    <span id="active-level-badge" class="badge bg-primary-soft text-primary mt-1">Mode</span>
+                </div>
+                <div class="text-end">
+                    <h2 id="active-timer" class="display-5 fw-bold text-dark mb-0">00:00</h2>
+                    <button class="btn btn-sm btn-outline-primary mt-1" onclick="startActiveTimer(15)">+15 min</button>
+                </div>
+            </div>
+            <div id="active-exercise-list" class="list-group list-group-flush bg-transparent mb-4"></div>
+            <div class="d-grid"><button class="btn btn-success btn-lg fw-bold shadow-sm rounded-pill py-3" onclick="finishAndShowCongrats()">✅ Finish Workout</button></div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5 mb-5" id="history-section">
+    <div class="col-12 mb-4">
+        <h4 class="fw-bold text-secondary mb-4">📊 Progress & Motivation</h4>
+        <div class="card border-0 shadow-sm p-4 text-center" style="border-radius: 25px; background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color: white;">
+            <div class="row align-items-center">
+                <div class="col-4">
+                    <h2 class="fw-bold mb-0">12</h2>
+                    <small class="opacity-75">This Month</small>
+                </div>
+                <div class="col-4 border-start border-end">
+                    <h2 class="fw-bold mb-0">3</h2>
+                    <small class="opacity-75">This Week</small>
+                </div>
+                <div class="col-4">
+                    <h2 class="fw-bold mb-0">🔥 5</h2>
+                    <small class="opacity-75">Day Streak</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 20px; border-left: 5px solid #2575fc !important;">
+            <div class="d-flex align-items-center">
+                <div class="fs-1 me-3">💡</div>
+                <div>
+                    <h6 class="fw-bold text-dark mb-1">Daily Motivation</h6>
+                    <p class="text-muted mb-0 italic">"The sweat of today is the strength of tomorrow."</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card p-4 mb-5 shadow-sm border-0 bg-white" style="border-radius: 25px;">
+    <h4 class="fw-bold text-secondary mb-4">⚖️ Personal Fitness Assistant</h4>
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <label class="small fw-bold text-muted">Current Weight (kg)</label>
+            <input type="number" id="current-weight" class="form-control border-0 bg-light" placeholder="e.g., 80" oninput="calculateAdvice()">
+        </div>
+        <div class="col-md-6">
+            <label class="small fw-bold text-muted">Target Weight (kg)</label>
+            <input type="number" id="target-weight" class="form-control border-0 bg-light" placeholder="e.g., 75" oninput="calculateAdvice()">
+        </div>
+    </div>
+
+    <div id="advice-container" class="d-none">
+        <div class="alert alert-primary border-0 rounded-4 p-4 shadow-sm mb-4">
+            <div class="d-flex align-items-center">
+                <div class="fs-1 me-3" id="advice-emoji">📈</div>
+                <div>
+                    <h5 class="fw-bold mb-1" id="advice-title">Analysis Result</h5>
+                    <p class="mb-0 small" id="advice-text"></p>
+                </div>
+            </div>
+        </div>
+        <h6 class="fw-bold text-dark mb-3">🥗 Recommended Menu</h6>
+        <div id="food-suggestions" class="row g-2"></div>
+    </div>
+</div>
+
+<div id="congrats-message" class="d-none text-center p-5 shadow-lg border-0 bg-white" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000; border-radius: 30px; min-width: 320px;">
+    <div class="success-checkmark mb-3">
+        <div class="check-icon">
+            <span class="icon-line line-tip"></span>
+            <span class="icon-line line-long"></span>
+            <div class="icon-circle"></div>
+            <div class="icon-fix"></div>
+        </div>
+    </div>
+    <h2 class="fw-bold text-primary">Congratulations!</h2>
+    <p class="text-secondary fs-5">You successfully finished your workout.</p>
+    <button class="btn btn-primary rounded-pill px-5 mt-3 fw-bold" onclick="closeCongrats()">Awesome!</button>
+</div>
+
+<div id="overlay" class="d-none position-fixed top-0 start-0 w-100 h-100 bg-dark opacity-50" style="z-index: 9999;"></div>
+
+<script>
+    // --- PROGRAM LIBRARY (Localized) ---
+    const programs = {
+        'Push': {
+            'Easy': [{n:'Wall Push-ups',s:3,r:12},{n:'Knee Push-ups',s:3,r:10},{n:'Bench Dips',s:2,r:12}],
+            'Medium': [{n:'Standard Push-ups',s:4,r:12},{n:'Dumbbell Bench Press',s:3,r:10},{n:'Lateral Raise',s:3,r:15}],
+            'Hard': [{n:'Barbell Bench Press',s:5,r:5},{n:'Military Press',s:4,r:8},{n:'Weighted Dips',s:4,r:10}]
+        },
+        'Pull': {
+            'Easy': [{n:'Dumbbell Row',s:3,r:12},{n:'Band Pull-apart',s:3,r:15},{n:'Bicep Curl',s:3,r:12}],
+            'Medium': [{n:'Lat Pulldown',s:3,r:12},{n:'Seated Cable Row',s:3,r:10},{n:'Hammer Curl',s:3,r:12}],
+            'Hard': [{n:'Weighted Pull-ups',s:4,r:6},{n:'Barbell Row',s:4,r:8},{n:'Deadlift',s:5,r:5}]
+        },
+        'Legs': {
+            'Easy': [{n:'Bodyweight Squat',s:3,r:15},{n:'Glute Bridge',s:3,r:15},{n:'Calf Raise',s:3,r:20}],
+            'Medium': [{n:'Goblet Squat',s:3,r:12},{n:'Walking Lunges',s:3,r:10},{n:'Leg Press',s:3,r:12}],
+            'Hard': [{n:'Barbell Back Squat',s:5,r:5},{n:'Romanian Deadlift',s:4,r:10},{n:'Bulgarian Split Squat',s:4,r:8}]
+        },
+        'FullBody': {
+            'Easy': [{n:'Push-ups',s:3,r:10},{n:'Squats',s:3,r:12},{n:'Plank',s:3,r:30}],
+            'Medium': [{n:'Burpees',s:3,r:10},{n:'Thrusters',s:3,r:12},{n:'Mountain Climbers',s:3,r:20}],
+            'Hard': [{n:'Clean & Press',s:5,r:5},{n:'Snatch',s:4,r:8},{n:'Muscle-ups',s:3,r:5}]
+        }
+    };
+
+    // --- CALORIE SYSTEM ---
+    let totalCalorie = parseInt(localStorage.getItem('fittrack_calories')) || 0;
+    function updateBar() {
+        const bar = document.getElementById('calorie-bar');
+        const limit = parseInt(document.getElementById('calorie-limit').value) || 2500;
+        const per = Math.min((totalCalorie / limit) * 100, 100);
+        bar.style.width = per + "%";
+        bar.innerText = totalCalorie + " / " + limit + " kcal";
+        bar.className = per > 90 ? "progress-bar bg-danger" : (per > 70 ? "progress-bar bg-warning text-dark" : "progress-bar bg-success");
+    }
+    function addCalorie() {
+        const sVal = parseInt(document.getElementById('food-select').value);
+        const mCal = parseInt(document.getElementById('manual-food-cal').value);
+        if (mCal > 0) totalCalorie += mCal; else if (sVal > 0) totalCalorie += sVal;
+        localStorage.setItem('fittrack_calories', totalCalorie);
+        updateBar();
+    }
+    function resetCalorie() { if(confirm("Are you sure you want to reset?")) { totalCalorie = 0; localStorage.setItem('fittrack_calories', 0); updateBar(); } }
+
+    // --- WORKOUT SYSTEM ---
+    let activeType = "", activeLevel = "", timerInt;
+    function toggleActiveWorkout(type) {
+        activeType = type;
+        activeLevel = document.querySelector('input[name="level"]:checked').value;
+        document.getElementById('active-workout-panel').classList.remove('d-none');
+        document.getElementById('active-title').innerText = type + " Workout";
+        document.getElementById('active-level-badge').innerText = activeLevel + " Mode";
+        const list = document.getElementById('active-exercise-list');
+        list.innerHTML = programs[type][activeLevel].map(ex => `
+            <div class="list-group-item bg-transparent border-0 d-flex justify-content-between align-items-center py-3 border-bottom">
+                <div><span class="fw-bold d-block text-dark">${ex.n}</span><small class="text-muted">${ex.s} Sets x ${ex.r} Reps</small></div>
+                <input class="form-check-input p-3 border-2" type="checkbox" style="cursor:pointer; border-radius: 8px;">
+            </div>
+        `).join('');
+        document.getElementById('active-workout-panel').scrollIntoView({ behavior: 'smooth' });
+        startActiveTimer(15);
+    }
+    function startActiveTimer(min) {
+        clearInterval(timerInt); let sec = min * 60;
+        timerInt = setInterval(() => {
+            const m = Math.floor(sec/60), s = sec%60;
+            document.getElementById('active-timer').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            sec--; if(sec<0) clearInterval(timerInt);
+        }, 1000);
+    }
+    function finishAndShowCongrats() {
+        document.getElementById('active-workout-panel').classList.add('d-none');
+        clearInterval(timerInt);
+        document.getElementById('congrats-message').classList.remove('d-none');
+        document.getElementById('overlay').classList.remove('d-none');
+    }
+    function closeCongrats() {
+        document.getElementById('congrats-message').classList.add('d-none');
+        document.getElementById('overlay').classList.add('d-none');
+    }
+
+    // --- FITNESS ASSISTANT SYSTEM ---
+    function calculateAdvice() {
+        const current = parseFloat(document.getElementById('current-weight').value);
+        const target = parseFloat(document.getElementById('target-weight').value);
+        const container = document.getElementById('advice-container');
+        const emoji = document.getElementById('advice-emoji');
+        const title = document.getElementById('advice-title');
+        const text = document.getElementById('advice-text');
+        const foodList = document.getElementById('food-suggestions');
+
+        if (!current || !target) { container.classList.add('d-none'); return; }
+        container.classList.remove('d-none');
+        foodList.innerHTML = "";
+        let foods = [];
+
+        if (current > target) {
+            emoji.innerText = "📉"; title.innerText = "Weight Loss Plan";
+            text.innerText = "You should aim for approximately 1900 kcal daily. Focus on protein-rich foods to maintain muscle mass.";
+            foods = [{n:"Grilled Chicken",c:165,d:"100g - High Protein"}, {n:"Quinoa Salad",c:220,d:"Low Glycemic Index"}, {n:"Broccoli",c:35,d:"Fiber Rich"}];
+        } else if (target > current) {
+            emoji.innerText = "📈"; title.innerText = "Bulking / Weight Gain Plan";
+            text.innerText = "You should aim for approximately 2900 kcal daily. Increase healthy carbohydrates.";
+            foods = [{n:"Peanut Butter",c:320,d:"Healthy Fats"}, {n:"White Rice",c:400,d:"Carb Support"}, {n:"Banana Smoothie",c:350,d:"Liquid Calories"}];
+        } else { emoji.innerText = "⚖️"; title.innerText = "Maintain Weight"; text.innerText = "Keep up with your balanced diet."; }
+
+        foods.forEach(f => {
+            foodList.innerHTML += `<div class="col-md-4"><div class="card border-0 bg-light p-3 h-100 rounded-4">
+                <div class="d-flex justify-content-between"><span class="fw-bold small">${f.n}</span><span class="badge bg-white text-primary border">${f.c} kcal</span></div>
+                <small class="text-muted mt-1">${f.d}</small></div></div>`;
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', updateBar);
+</script>
+
+<style>
+    .preset-card { cursor: pointer; transition: 0.3s; border-radius: 20px; }
+    .preset-card:hover { transform: translateY(-8px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+    .bg-primary-soft { background-color: rgba(13, 110, 253, 0.1); }
+    /* Checkmark Animation */
+    .success-checkmark { width: 80px; height: 115px; margin: 0 auto; }
+    .check-icon { width: 80px; height: 80px; position: relative; border-radius: 50%; box-sizing: content-box; border: 4px solid #4CAF50; }
+    .check-icon::before, .check-icon::after { content: ''; height: 100px; position: absolute; background: #ffffff; transform: rotate(-45deg); }
+    .check-icon::before { top: 3px; left: -2px; width: 30px; transform-origin: 100% 50%; border-radius: 100px 0 0 100px; }
+    .check-icon::after { top: 0; left: 30px; width: 60px; transform-origin: 0 50%; border-radius: 0 100px 100px 0; }
+    .icon-line { height: 5px; background-color: #4CAF50; display: block; border-radius: 2px; position: absolute; z-index: 10; }
+    .line-tip { top: 46px; left: 14px; width: 25px; transform: rotate(45deg); animation: icon-line-tip 0.75s; }
+    .line-long { top: 38px; right: 8px; width: 47px; transform: rotate(-45deg); animation: icon-line-long 0.75s; }
+    @keyframes icon-line-tip { 0% { width: 0; left: 1px; top: 19px; } 54% { width: 0; left: 1px; top: 19px; } 70% { width: 50px; left: -8px; top: 37px; } 84% { width: 17px; left: 21px; top: 48px; } 100% { width: 25px; left: 14px; top: 46px; } }
+    @keyframes icon-line-long { 0% { width: 0; right: 46px; top: 54px; } 65% { width: 0; right: 46px; top: 54px; } 84% { width: 55px; right: 0px; top: 35px; } 100% { width: 47px; right: 8px; top: 38px; } }
+</style>
+{% endblock %}
