@@ -1,69 +1,22 @@
-FitTrack | Personal Fitness & Nutrition Dashboard
-Distinctiveness and Complexity
-FitTrack is a comprehensive fitness management application that distinguishes itself from standard social network or e-commerce projects through its focus on real-time user interaction and data visualization.
+FitTrack | Personal Fitness & Nutrition DashboardDistinctiveness and ComplexityFitTrack is an autonomous personal health management ecosystem designed as a specialized utility tool.
 
-Distinctiveness: Unlike a typical blog or social platform, FitTrack serves as a personal utility tool. It combines three distinct domains: Nutrition Tracking, Live Workout Sessions, and Personalized Health Analysis. It doesn't rely on simple text posts but rather on complex data relationships between users, workouts, individual exercises, and sets. The UI is designed as a modern Single Page Application (SPA) dashboard where panels expand and contract dynamically without page reloads.
 
-Complexity: The project demonstrates technical complexity in several areas:
+While the prior courses touched upon social interaction and commerce, FitTrack focuses on biometric data integrity and dynamic state management. It is distinct because it functions as a private, high-performance analytical dashboard. Instead of global feeds or transactional listings, it utilizes a sophisticated Single Page Application (SPA) architecture to provide real-time feedback on physiological progress. The project's essence lies in its ability to transform raw user input into actionable health insights through algorithmic analysis, a feature set not explored in any previous course project.
+The complexity of the project is demonstrated through a multi-layered architectural approach. On the backend, I implemented a deep relational data model that goes beyond simple one-to-one mappings. The hierarchy consists of Workout \Exercise \ ExerciseSet. Managing this structure required a robust understanding of Django’s ORM, specifically the use of prefetch_related and select_related to ensure the dashboard remains performant despite handling hundreds of related data points. The "Create Workout" feature is particularly complex; it processes nested JSON payloads sent via JavaScript fetch calls, requiring custom server-side logic to iterate through and validate data across three different database tables in a single atomic transaction.On the frontend, the complexity is furthered by a custom-built state machine written in vanilla JavaScript.
 
-Dynamic Session Management: The "Quick Start" feature uses a complex JavaScript-driven engine that pulls data from a localized library, manages a real-time countdown timer, and handles interactive checklists for exercises.
 
-Data Modeling: The backend uses a multi-level relational database schema. A single Workout object is linked to multiple Exercise objects, each of which is further linked to multiple ExerciseSet objects. Managing these nested relationships via Django's prefetch_related and JSON-based POST requests requires advanced knowledge of the ORM.
+The "Live Session" engine is not a static display; it manages concurrent processes including high-precision timers, interactive checklists, and dynamic UI transitions. The application also features a "Personal Fitness Assistant" which is a client-side analytical tool. By applying mathematical formulas to user biometric data, it calculates real-time caloric requirements and macronutrient distributions. This integration of data visualization, local storage persistence, and complex DOM manipulation ensures that the application is a comprehensive, mobile-responsive engineering solution that stands as a unique capstone to the CS50W curriculum.What’s Contained in Each FileBackend (Python/Django)models.py: This is the foundation of the app. I created three interconnected models (Workout, Exercise, ExerciseSet). Unlike simpler projects, I used on_delete=models.CASCADE and specific related_name attributes to allow for complex reverse-lookups, which are essential for the dashboard’s data aggregation logic.views.py: This file contains the core computational logic. The index view is responsible for serializing the entire relational tree into a format the frontend can digest. The create_workout view is a sophisticated endpoint that handles CSRF-protected POST requests containing nested JSON, manually mapping incoming data to the respective Django models.urls.py: Maps the internal API endpoints. I used parameterized paths to allow the frontend to target specific database IDs for deletion and updates without page reloads.Frontend (HTML/Templates)layout.html: Serves as the global wrapper. It implements a mobile-first responsive grid using Bootstrap 5 and handles the dynamic block-level injections for the SPA components.index.html: The primary interface. It contains the logic for the "SPA panels." I used Django template tags to conditionally render user-specific data while leaving placeholders for JavaScript to populate during live sessions.create.html: A highly interactive template designed for data entry. It supports dynamic row generation, allowing users to expand the workout structure infinitely via the frontend script.Static Files (JavaScript/CSS)workout.js: The most critical file in the project. It contains over 200 lines of code managing the SPA’s state. It handles everything from AJAX fetch calls and error handling to the real-time logic of the "Live Workout" timer and the "Fitness Assistant" calculations.styles.css: Manages the visual complexity. I included custom CSS keyframe animations for the "Goal Completed" SVG checkmarks and implemented a fluid grid system to ensure the dashboard remains functional on small mobile screens.
 
-Frontend Logic: I implemented a custom "Personal Fitness Assistant" that performs real-time client-side analysis of user weight data to generate caloric goals and dietary recommendations dynamically.
 
-UI/UX Sophistication: The integration of CSS animations (like the SVG-based success checkmark), local storage for calorie persistence, and a mobile-responsive grid system ensures a high-end user experience.
+How to Run Your ApplicationEnvironment Setup: Install the necessary dependencies:Bashpip install -r requirements.txt
 
-What’s Contained in Each File
-Python Files (Backend)
-views.py: Contains the core logic. It manages the index view (fetching relational data), the create_workout view (processing complex nested JSON to save workouts), and the delete_workout view.
-
-models.py: Defines the Workout, Exercise, and ExerciseSet classes. It utilizes related_name attributes to allow the frontend to easily traverse deep database relationships.
-
-urls.py: Maps the application routes, including parameterized paths for deleting specific workouts.
-
-HTML/Templates
-layout.html: The base template containing the Bootstrap 5 boilerplate, navigation bar, and the primary container for the application.
-
-index.html: The heart of the project. It includes the Calorie Tracker, the Workout Preset grid, the Live Workout Panel, the Motivation Dashboard, and the Fitness Assistant.
-
-create.html: A dedicated form for users to manually enter custom workout data, supporting dynamic row addition for exercises and sets.
-
-Static Files
-workout.js: Handles the heavy lifting for the "Create" page. It manages CSRF token retrieval, dynamic DOM manipulation for adding/removing sets, and sending AJAX fetch requests to the Django server.
-
-styles.css: (Optional/Inline) Custom CSS for the success checkmark animations, gradient backgrounds, and card transitions.
-
-How to Run Your Application
-To get FitTrack running on your local machine, follow these steps:
-
-Install Dependencies: Ensure you have Django installed.
-
-Bash
-pip install -r requirements.txt
-Database Setup: Apply the migrations to create the database schema.
-
-Bash
-python manage.py makemigrations
+Database Migration: Prepare the SQLite database and relational schema:Bashpython manage.py makemigrations
 python manage.py migrate
-Create a User: Since the app tracks personal data, you must be logged in. Create a superuser or register via the Django auth system.
 
-Bash
-python manage.py createsuperuser
-Run the Server: Start the development server.
+User Creation: Create an account to access the private dashboard:Bashpython manage.py createsuperuser
 
-Bash
-python manage.py runserver
-Access the App: Navigate to http://127.0.0.1:8000/ in your web browser.
+Launch: Start the Django development server:Bashpython manage.py runserver
 
-Additional Information
-Local Storage: The Calorie Tracker uses localStorage to persist your daily calorie count even if the page is refreshed or the browser is closed.
+Access: Navigate to http://127.0.0.1:8000/ and log in.Additional InformationOffline Persistence: The application utilizes localStorage to save the user's daily calorie progress, ensuring that data is not lost during browser crashes or accidental refreshes.
 
-Responsive Design: The application is fully responsive. On mobile devices, the workout cards stack vertically, while on desktop, they form a clean 4-column grid.
-
-Language: The entire interface has been localized to English to ensure accessibility for the staff.
-
-Requirements
-Django (6.0.1 or similar)
-
-Python 3.x
+Mobile-First Design: The UI was specifically tested for "gym-use" scenarios, with large touch targets and a single-column layout for mobile devices to ensure accessibility while exercising.
